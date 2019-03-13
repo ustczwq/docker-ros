@@ -1,27 +1,22 @@
-# ros-kenetic-desktop-full
-FROM osrf/ros:kinetic-desktop-full-xenial
+# Based on ros:melodic-ros-core-bionic
+FROM ros:melodic-ros-core-bionic
 
-# GraspIt! dependencies
+# Install ros-melodic-desktop
 RUN apt-get update && apt-get install -y \
-    libqt4-dev \
-    libqt4-opengl-dev \
-    libqt4-sql-psql \
-    libcoin80-dev \
-    libsoqt4-dev \
-    libblas-dev \
-    liblapack-dev \
-    libqhull-dev \
-    libeigen3-dev
+    ros-melodic-desktop 
 
-# GraspIt! Download
-RUN git clone https://github.com/graspit-simulator/graspit.git
+# Install gazebo9 step-by-step
+## set faster mirrors
+RUN sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu-stable `lsb_release -cs` main" > /etc/apt/sources.list.d/gazebo-stable.list' \
+    && apt-get update 
 
-# Graspit! Build
-RUN cd graspit \
-    && export GRASPIT=$PWD \
-    && mkdir build \
-    && cd build \
-    && cmake .. \
-    && make -j5
-    
+## setup keys
+RUN apt-get install -y wget \
+    && wget http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -
+
+## install Gazebo
+RUN apt-get update && apt-get install -y \
+    gazebo9 \
+    libgazebo9-dev
+
 RUN rm -rf /var/lib/apt/lists/*
